@@ -1,0 +1,14 @@
+.bounty-heading {
+  font-weight: bold;
+}
+
+.bounty-data-row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 15px;
+}
+
+.bounty-data-row:hover {
+  background: #EEEEEE;
+  cursor: pointer;
+}
