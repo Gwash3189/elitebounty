@@ -6,6 +6,7 @@ class Player
   property :updated_at, DateTime
   property :email, String, :length => 255, :required => true
   property :password, String, :length => 255, :required => true
+  property :salt, String, :length => 255, :required => true
 
   def payer!
     Bounty.all(:payer => @id)
@@ -24,7 +25,8 @@ class Player
   end
 
   def password=(unhashed)
-    super(BCrypt::Password.create(Random.new_seed.to_s + unhashed))
+    self.salt = Random.new_seed.to_s;
+    super(BCrypt::Password.create(self.salt + unhashed))
     self.save
   end
 

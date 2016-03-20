@@ -13,6 +13,7 @@ end
 
 
 use Rack::Throttle::Minute, :max => 30 if settings.production?
+require "./helpers/Authentication"
 require "./models/index"
 require "./fixtures/index" if settings.development?
 require "./controllers/index"
