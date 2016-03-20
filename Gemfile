@@ -7,7 +7,8 @@ gem "data_mapper"
 gem "json"
 gem "rack-throttle"
 gem "dm-pager"
-gem "http"
+gem "mail"
+gem "bcrypt"
 
 group :development do
   gem "dm-sqlite-adapter"
