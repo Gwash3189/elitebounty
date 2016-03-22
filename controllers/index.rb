@@ -2,9 +2,9 @@ require "./helpers/dir-require"
 require "./helpers/json"
 
 before do
-  require('byebug'); byebug;
-  status 403 if Helpers.authentication_helper.is_authenticated?(request)
-  return
+  unless  Helpers::Authentication.unauthenticated_endpoint?(request.path_info)
+    halt 401 unless Helpers::Authentication.is_authenticated?(headers)
+  end
 end
 
 Helpers::dir_require '/controllers'

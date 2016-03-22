@@ -1,15 +1,13 @@
+require('faker')
+
 module Fixtures
-  def self.random_range(start = 1, finish = 10)
+  def self.random_range(start = 1, finish = 200)
     (start..Faker::Number.between(start + 1, finish))
   end
 
   def self.payment_method
     methods = ["gold", "slaves", "minerals"]
     methods[Faker::Number.between(0, methods.length - 1)]
-  end
-
-  def self.cmdr
-    "CMDR #{Faker::Name.name}"
   end
 
   def self.boolean
@@ -43,15 +41,27 @@ module Fixtures
     })
   end
 
+  def self.new_admin
+    Player.create({
+      :created_at => Faker::Time.between(Date.today - 35, Time.now),
+      :email => 'admin@admin.com',
+      :password => 'admin'
+    })
+  end
+
   def self.generate
-    require('faker')
     range = Fixtures::random_range
+
     puts "#{range} Bounties to be made"
+
     range.each do
       result = Fixtures::new_bounty(Fixtures::new_player, Fixtures::new_player, Fixtures::new_player).save
+
       puts "Time: #{Time.now}; Made?: #{result}"
     end
-    require('byebug'); byebug
+
+    Fixtures::new_admin
+
     puts "Bounties: #{Bounty.all.length}"
     puts "Players: #{Player.all.length}"
   end

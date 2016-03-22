@@ -34,7 +34,7 @@ class Bounty
   end
 
   def accepted_by=(model)
-    super(model.id.to_s) if @accepted
+    super(model.id.to_s) unless model.nil?
   end
 
   def accepted?

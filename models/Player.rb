@@ -30,6 +30,10 @@ class Player
     self.save
   end
 
+  def password?(unhashed)
+    password == self.salt + unhashed
+  end
+
   def check_password(unhashed)
     stored_hashed = BCrypt::Password.new(@password)
     hashed = BCrypt::Password.create(unhashed)
