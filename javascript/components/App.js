@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
-import map from 'lodash/map';
 
 import AppHeader from './AppHeader.js';
 import BountiesTable from './BountiesTable/BountiesTable.js';
-import { bounty } from './../helpers/bounty';
+import { bounty, isLoggedIn } from './../helpers/api';
 import { toHash, toObject, setState } from './../helpers/functional.js';
+import { getState, update, State } from './../helpers/state.js';
+
+const map = ({ bountys }) => {
+  return { bountys };
+}
 
 export default class App extends Component {
 
   constructor(props) {
     super(props);
-
-    this.state = {
-      bountys: {}
-    };
 
     this.getBounties();
   }
@@ -22,14 +22,19 @@ export default class App extends Component {
     bounty.all()
       .then(toHash)
       .then(toObject('bountys'))
-      .then(setState(this));
+      .then(({ bountys }) => {
+        update({ bountys })
+      });
   }
 
   render() {
+    const { bountys } = getState()
     return (
       <div className='container-fluid'>
         <AppHeader/>
-        <BountiesTable bountys={this.state.bountys}/>
+        <State map={map} {...this.props}>
+          <BountiesTable bountys={bountys}/>
+        </State>
       </div>
     );
   }

@@ -1,13 +1,12 @@
 require "Base64"
 require "./helpers/AESCrypt"
+require "time"
 
 module Helpers
   module Authentication
     def self.unauthenticated_endpoints
       @unauthenticated_endpoints ||= [
-        '/player/login',
         '/',
-        '/bountys',
         '.map',
         '/favicon.ico',
         '.js',
@@ -28,32 +27,32 @@ module Helpers
       @current_player = player
     end
 
-    def self.username(headers)
-      Base64.strict_decode64(self.authorization_header(headers)).split(':').first
+    def self.username(env)
+      Base64.strict_decode64(self.authorization_header(env)).split(':').first
     end
 
-    def self.password(headers)
-      Base64.strict_decode64(self.authorization_header(headers)).split(':')[1]
+    def self.password(env)
+      Base64.strict_decode64(self.authorization_header(env)).split(':')[1]
     end
 
-    def self.authorization_header(headers)
-      headers["Authorization"]
+    def self.authorization_header(env)
+      env["HTTP_AUTHENTICATION"]
     end
 
-    def self.elitebounty_authorization_header(headers)
-      headers["X-Elitebounty-Authorization"]
+    def self.elitebounty_authorization_header(env)
+      env["HTTP_X_ELITEBOUNTY_AUTHENTICATION"]
     end
 
-    def self.is_authenticated?(headers)
-      authorization = Helpers::Authentication.authorization_header(headers)
-      elitebounty_authorization = Helpers::Authentication.elitebounty_authorization_header(headers)
+    def self.is_authenticated?(request_env, headers)
+      authorization = Helpers::Authentication.authorization_header(request_env)
+      elitebounty_authorization = Helpers::Authentication.elitebounty_authorization_header(request_env)
 
       return false if(authorization.nil? && elitebounty_authorization.nil?)
 
       if (!authorization.nil? && elitebounty_authorization.nil?)
         begin
-          Helpers::Authentication.current_player = Player.all({:email => Helpers::Authentication.username(headers)}).first
-          Helpers::Authentication.authenticate(Helpers::Authentication.current_player, headers) if Helpers::Authentication.current_player.password?(Helpers::Authentication.password(headers))
+          Helpers::Authentication.current_player = Player.all({:email => Helpers::Authentication.username(request_env)}).first
+          Helpers::Authentication.authenticate(Helpers::Authentication.current_player, request_env) if Helpers::Authentication.current_player.password?(Helpers::Authentication.password(request_env))
         rescue
           return false
         end
@@ -61,9 +60,16 @@ module Helpers
       end
 
       if (!authorization.nil? && !elitebounty_authorization.nil?)
-        id = Helpers::AESCrypt.decrypt(Helpers::Authentication.elitebounty_authorization_header(headers))
         begin
-          Helpers::Authentication.current_player = Player.find!(id);
+          id, time = Helpers::AESCrypt.decrypt(Helpers::Authentication.elitebounty_authorization_header(request_env)).split('__')
+
+          if (Time.parse(time) < Time.now)
+            Helpers::Authentication.revoke(request_env)
+            return false
+          end
+
+          Helpers::Authentication.current_player = Player.get!(id)
+          Helpers::Authentication.authenticate(Helpers::Authentication.current_player, headers)
         rescue
           return false
         end
@@ -74,7 +80,11 @@ module Helpers
     end
 
     def self.authenticate(player, headers)
-      headers['X-Elitebounty-Authorization'] = Helpers::AESCrypt.encrypt(player.id)
+      headers['X-Elitebounty-Authentication'] = Helpers::AESCrypt.encrypt("#{player.id}__#{Time.now + 60 * 30}")
+    end
+
+    def self.revoke(headers)
+      headers['X-Elitebounty-Authentication'] = '';
     end
   end
 end

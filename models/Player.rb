@@ -39,4 +39,16 @@ class Player
     hashed = BCrypt::Password.create(unhashed)
     stored_hashed == hashed
   end
+
+  def match?(player)
+    @id == player.id
+  end
+
+  def to_json
+    {
+      :email => @email,
+      :created_at => @created_at,
+      :updated_at => @updated_at
+    }.to_json
+  end
 end

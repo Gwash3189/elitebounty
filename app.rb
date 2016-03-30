@@ -17,5 +17,4 @@ require "./helpers/Authentication"
 require "./helpers/Routes"
 require "./models/index"
 require "./fixtures/index" if settings.development?
-require "byebug" if settings.development?
 require "./controllers/index"

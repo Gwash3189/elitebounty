@@ -8,17 +8,24 @@ import BountiesTableBodyRow from './BountiesTableBodyRow.js';
 import BountiesTableBody from './BountiesTableBody.js';
 
 const BountyTableBody = ({ bountys }) => {
+  const daterize = (date) => {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const newDate = new Date(date);
+    return `${monthNames[newDate.getMonth()]} ${newDate.getDate()} ${newDate.getFullYear()}`
+  }
+
+  const casherize = (x) => {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
   return (
     <div>
       <BountiesTableHeader>
         <BountiesTableHeaderItem size='large'>
-          Issuer
-        </BountiesTableHeaderItem>
-        <BountiesTableHeaderItem size='large'>
-          Target
-        </BountiesTableHeaderItem>
-        <BountiesTableHeaderItem size='large'>
-          Taken By
+          Issued At
         </BountiesTableHeaderItem>
         <BountiesTableHeaderItem size='med'>
           Bounty
@@ -33,16 +40,10 @@ const BountyTableBody = ({ bountys }) => {
             return (
               <BountiesTableBodyRow key={bounty.id}>
                 <BountiesTableBodyItem size='large'>
-                  {bounty.payer}
-                </BountiesTableBodyItem>
-                <BountiesTableBodyItem size='large'>
-                  {bounty.target}
-                </BountiesTableBodyItem>
-                <BountiesTableBodyItem size='large'>
-                  {bounty.accepted_by}
+                  {daterize(bounty.created_at)}
                 </BountiesTableBodyItem>
                 <BountiesTableBodyItem size='med'>
-                  {bounty.credits}
+                  {casherize(bounty.credits)}
                 </BountiesTableBodyItem>
                 <BountiesTableBodyItem size='small'>
                   {
