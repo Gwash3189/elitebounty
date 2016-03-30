@@ -1,0 +1,8 @@
+.toast-bar {
+  position: relative;
+}
+
+.toast {
+  position: absolute;
+  background-color: red;
+}
