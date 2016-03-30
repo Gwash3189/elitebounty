@@ -15,7 +15,6 @@ import { X_ELITEBOUNTY_AUTHENTICATION_HEADER } from './helpers/constants';
 const applicationStorage = localStorage(keys.application);
 
 const isUserLoggedIn = (state, redirect) => {
-  debugger;
   const { user: { isLoggedIn }} = getState();
   return isLoggedIn || redirect('/');
 }
@@ -31,7 +30,7 @@ middleware((state) => applicationStorage.value = state.api.headers)
 seed(() => {
  const seedState = { api: { headers: applicationStorage.value }};
 
- if (seedState.api.headers[X_ELITEBOUNTY_AUTHENTICATION_HEADER] && seedState.api.headers.authentication) {
+ if (seedState.api.headers && seedState.api.headers[X_ELITEBOUNTY_AUTHENTICATION_HEADER] && seedState.api.headers.authentication) {
    seedState.user = {
      isLoggedIn: true
    };
