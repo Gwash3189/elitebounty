@@ -7,10 +7,6 @@ before do
   end
 end
 
-after do
-  response.redirect('/') unless response.status == 200
-end
-
 Helpers::dir_require '/controllers'
 
 unauthenticated :get, '/' do

@@ -3,7 +3,7 @@ import join from 'lodash/join';
 
 const BountyTableHeaderItem = ({ size, className, children }) => {
   const classes = size === "large"
-    ? 'col-xs-3'
+    ? 'col-xs-5'
     : size === 'med'
       ? 'col-xs-2'
       : 'col-xs-1';

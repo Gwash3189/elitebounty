@@ -27,7 +27,7 @@ const BountyTableBody = ({ bountys }) => {
         <BountiesTableHeaderItem size='large'>
           Issued At
         </BountiesTableHeaderItem>
-        <BountiesTableHeaderItem size='med'>
+        <BountiesTableHeaderItem size='large'>
           Bounty
         </BountiesTableHeaderItem>
         <BountiesTableHeaderItem size='small'>
@@ -42,7 +42,7 @@ const BountyTableBody = ({ bountys }) => {
                 <BountiesTableBodyItem size='large'>
                   {daterize(bounty.created_at)}
                 </BountiesTableBodyItem>
-                <BountiesTableBodyItem size='med'>
+                <BountiesTableBodyItem size='large'>
                   {casherize(bounty.credits)}
                 </BountiesTableBodyItem>
                 <BountiesTableBodyItem size='small'>

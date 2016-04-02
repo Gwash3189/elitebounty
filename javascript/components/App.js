@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import AppHeader from './AppHeader.js';
 import BountiesTable from './BountiesTable/BountiesTable.js';
+import ToastBar from './Toasts/ToastBar';
 import { bounty, isLoggedIn } from './../helpers/api';
 import { toHash, toObject, setState } from './../helpers/functional.js';
 import { getState, update, State } from './../helpers/state.js';
@@ -23,18 +24,21 @@ export default class App extends Component {
       .then(toHash)
       .then(toObject('bountys'))
       .then(({ bountys }) => {
-        update({ bountys })
+        update((state) => ({ bountys: { ...state.bountys, ...bountys}}))
       });
   }
 
   render() {
     const { bountys } = getState()
     return (
-      <div className='container-fluid'>
-        <AppHeader/>
-        <State map={map} {...this.props}>
-          <BountiesTable bountys={bountys}/>
-        </State>
+      <div>
+        <ToastBar />
+        <div className='container-fluid'>
+          <AppHeader/>
+          <State map={map} {...this.props}>
+            <BountiesTable bountys={bountys}/>
+          </State>
+        </div>
       </div>
     );
   }

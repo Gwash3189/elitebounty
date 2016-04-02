@@ -2,19 +2,19 @@ import React, { Component } from 'react';
 import { State } from './../../helpers/state.js'
 import Toast from './Toast';
 
-const map = ({toast}) => {
+const map = ({ toast }) => {
   return { toast }
 }
 
-export default class LoginContainer extends Component {
+export default class ToastBar extends Component {
 
   render() {
     return (
-      <State map={map} {...this.props}>
-        <div className='toast-bar'>
-          <Toast />
-        </div>
-      </State>
+      <div className='toast-bar'>
+        <State map={map} {...this.props}>
+            <Toast />
+        </State>
+      </div>
     );
   }
 }

@@ -1,28 +1,37 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { Link } from 'react-router';
 
 import { player, api } from './../../helpers/api.js'
 import { getState, update, State } from './../../helpers/state.js'
 
 export default class Login extends Component {
+  static contextTypes = {
+    router: PropTypes.object.isRequired
+  }
+
   register() {
     const { user: { register: { username, password, confirmPassword }}} = this.props
 
     this.doPasswordsMatch() && player.register(username, password, confirmPassword)
-      .then(() => console.log('Woo!'), () => console.log('fail'))
+      .then(() => this.context.router.push('/'))
   }
 
   handleChangeUsername(e) {
-    update({user: { register: { username: e.target.value }}});
+    update((state) => ({  user: { register: { ...state.user.register, username: e.target.value }}}));
   }
 
   handleChangePassword(e) {
-    update({user: { register: { password: e.target.value }}});
+    update((state) => ({ user: { register: { ...state.user.register, password: e.target.value }}}));
   }
 
   handleChangeConfirmPassword(e) {
-    update({user: { register: { confirmPassword: e.target.value }}});
+    update((state) => ({ user: { register: { ...state.user.register, confirmPassword: e.target.value }}}));
   }
+
+  toggleRememberMe() {
+    update((state) => ({ user: { register: { ...state.user.register, rememberMe: !state.user.rememeberMe }}}));
+  }
+
 
   renderButton() {
     const { api: { loading }} = this.props;

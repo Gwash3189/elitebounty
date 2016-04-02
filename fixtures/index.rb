@@ -37,7 +37,8 @@ module Fixtures
     Player.create({
       :created_at => Faker::Time.between(Date.today - 35, Time.now),
       :email => Faker::Internet.email,
-      :password => Faker::Internet.password
+      :password => Faker::Internet.password,
+      :cmdr_name => "cmdr " +Faker::Name.name
     })
   end
 

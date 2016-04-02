@@ -19,19 +19,25 @@ const isUserLoggedIn = (state, redirect) => {
   return isLoggedIn || redirect('/');
 }
 
-isDevelopment(() => middleware((state, meta) => console.log(`
-${new Date()},
-State: ${JSON.stringify(state, null, 2)},
-Meta: ${JSON.stringify(meta, null, 2)}
-`)));
+// isDevelopment(() => middleware((state, meta) => console.log(`
+// ${new Date()},
+// State: ${JSON.stringify(state, null, 2)},
+// Meta: ${JSON.stringify(meta, null, 2)}
+// `)));
 
 middleware((state) => applicationStorage.value = state.api.headers)
 
-seed(() => {
- const seedState = { api: { headers: applicationStorage.value }};
+seed((state) => {
+  const seedState = {
+   api: {
+      ...state.api,
+      headers: applicationStorage.value
+    }
+  };
 
  if (seedState.api.headers && seedState.api.headers[X_ELITEBOUNTY_AUTHENTICATION_HEADER] && seedState.api.headers.authentication) {
    seedState.user = {
+     ...state.user,
      isLoggedIn: true
    };
  }

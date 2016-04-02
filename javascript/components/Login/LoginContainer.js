@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Login from './Login';
+import ToastBar from './../Toasts/ToastBar';
 import { State } from './../../helpers/state.js'
 
 const map = ({user, api}) => {
@@ -10,9 +11,12 @@ export default class LoginContainer extends Component {
 
   render() {
     return (
-      <State map={map} {...this.props}>
-        <Login />
-      </State>
+      <div>
+        <ToastBar />
+        <State map={map} {...this.props}>
+          <Login />
+        </State>
+      </div>
     );
   }
 }

@@ -6,7 +6,6 @@ export default (key) => {
   const api = {
     __value: localStorage.getItem(key) || null,
     get value() {
-      debugger;
       return JSON.parse(api.__value)
     },
     set value(value) {

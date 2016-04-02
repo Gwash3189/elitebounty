@@ -1,16 +1,13 @@
 import React, { Component, cloneElement, PropTypes } from 'react';
 import cloneDeep from 'lodash/cloneDeep';
-import merge from 'lodash/merge';
+import extend from 'lodash/extend';
 import { X_ELITEBOUNTY_AUTHENTICATION_HEADER } from './constants';
 import { apply } from './functional';
 
 let state = {
-  toasts: {
-    success: [],
-    failure: []
-  },
+  toast: [],
   api: {
-    loading:{},
+    loading: {},
     headers:{
       'authentication': '',
       [X_ELITEBOUNTY_AUTHENTICATION_HEADER]: '',
@@ -33,21 +30,27 @@ let state = {
   bountys: {}
 };
 
-const listeners = [];
-const middlewares = [];
+let listeners = [];
+let middlewares = [];
 
 export const seed = (f) => {
-  const seedState = typeof f === 'function' ? f(state) : f;
-  state = cloneDeep(merge(state, seedState));
+  const newState = typeof f === 'function' ? f(state) : f;
+  state = cloneDeep({
+    ...state,
+    ...newState
+  });
 }
 
 export const update = (f, meta = {}) => {
   const newState = typeof f === 'function' ? f(state) : f;
-  state = cloneDeep(merge(state, newState));
+  state = cloneDeep({
+    ...state,
+    ...newState
+  });
 
   const frozenState = Object.freeze(state);
 
-  listeners.forEach(apply(frozenState, meta))
+  listeners.forEach((x) => setTimeout(() => apply(frozenState, meta)(x), 0))
   middlewares.forEach(apply(frozenState, meta))
 }
 
@@ -55,7 +58,7 @@ export const getState = (f) => !!f ? f(Object.freeze(state)) : Object.freeze(sta
 
 export const middleware = (f) => (middlewares.push(f)) - 1;
 export const listen = (f) => (listeners.push(f)) - 1;
-export const silence = (id) => listeners.splice(id, 1)
+export const silence = (id) => listeners = listeners.splice(id, 1)
 
 export class State extends Component {
   static propTypes = {

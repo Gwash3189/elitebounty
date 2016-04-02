@@ -10,11 +10,10 @@ export default class Login extends Component {
   }
 
   constructor(props, context) {
-    debugger;
     super(props);
     const { user: { isLoggedIn }} = props;
 
-    if (isLoggedIn) { context.router.push('/app') }
+    if (isLoggedIn) { setTimeout(() => context.router.push('/app'), 0) }
   }
 
   login(e) {
@@ -24,19 +23,21 @@ export default class Login extends Component {
 
     authentication
       .login(username, password)
-      .then(() => this.context.router.push('/app'));
+      .then(() => {
+        this.context.router.push('/app')
+      });
   }
 
   handleChangeUsername(e) {
-    update({user: { username: e.target.value }});
+    update((state) => ({user: { ...state.user, username: e.target.value }}));
   }
 
   handleChangePassword(e) {
-    update({user: { password: e.target.value }});
+    update((state) => ({user: { ...state.user, password: e.target.value }}));
   }
 
   toggleRememberMe() {
-    update({user: { rememberMe: !state.user.rememeberMe }});
+    update((state) => ({user: { ...state.user, rememberMe: !state.user.rememeberMe }}));
   }
 
   renderButton() {
@@ -47,10 +48,14 @@ export default class Login extends Component {
       : <button onClick={::this.login} type="button" className="btn btn-primary btn-lg btn-block">Login</button>
   }
 
+  handleKeyDown(e) {
+    if (e.which === 13) { this.login(e) }
+  }
+
   render() {
     return (
       <div className='container-fluid login-container'>
-        <div className='col-xs-offset-4 col-xs-4'>
+        <div className='col-xs-offset-4 col-xs-4' onKeyDown={::this.handleKeyDown}>
           <div className='form-group'>
             <label htmlFor='email'>Email address</label>
             <input onChange={::this.handleChangeUsername} type='email' className='form-control' id='email' placeholder='Email' />

@@ -4,6 +4,7 @@ class Player
   property :id, Serial, :key => true
   property :created_at, DateTime
   property :updated_at, DateTime
+  property :cmdr_name, String, :length => 255
   property :email, String, :length => 255, :required => true
   property :password, String, :length => 255, :required => true
   property :salt, String, :length => 255, :required => true
@@ -26,7 +27,7 @@ class Player
 
   def password=(unhashed)
     self.salt = Random.new_seed.to_s;
-    super(BCrypt::Password.create(self.salt + unhashed))
+    super(BCrypt::Password.create(self.salt.to_s + unhashed.to_s))
     self.save
   end
 
