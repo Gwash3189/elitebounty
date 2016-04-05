@@ -1,6 +1,8 @@
 import React, { Component, cloneElement, PropTypes } from 'react';
 import cloneDeep from 'lodash/cloneDeep';
+import forEach from 'lodash/forEach';
 import extend from 'lodash/extend';
+import uniqueId from 'lodash/uniqueId';
 import { X_ELITEBOUNTY_AUTHENTICATION_HEADER } from './constants';
 import { apply } from './functional';
 
@@ -30,7 +32,7 @@ let state = {
   bountys: {}
 };
 
-let listeners = [];
+let listeners = {};
 let middlewares = [];
 
 export const seed = (f) => {
@@ -50,15 +52,21 @@ export const update = (f, meta = {}) => {
 
   const frozenState = Object.freeze(state);
 
-  listeners.forEach((x) => setTimeout(() => apply(frozenState, meta)(x), 0))
-  middlewares.forEach(apply(frozenState, meta))
+  forEach(listeners, apply(frozenState, meta));
+  forEach(middlewares, apply(frozenState, meta));
 }
 
 export const getState = (f) => !!f ? f(Object.freeze(state)) : Object.freeze(state);
 
 export const middleware = (f) => (middlewares.push(f)) - 1;
-export const listen = (f) => (listeners.push(f)) - 1;
-export const silence = (id) => listeners = listeners.splice(id, 1)
+export const listen = (f) => {
+  const id = uniqueId('listeners');
+  listeners[id] = f;
+  return id;
+}
+export const silence = (id) => {
+  return delete listeners[id];
+ }
 
 export class State extends Component {
   static propTypes = {

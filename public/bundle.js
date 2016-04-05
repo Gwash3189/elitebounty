@@ -62,27 +62,27 @@
 	
 	var _App2 = _interopRequireDefault(_App);
 	
-	var _LoginContainer = __webpack_require__(397);
+	var _LoginContainer = __webpack_require__(406);
 	
 	var _LoginContainer2 = _interopRequireDefault(_LoginContainer);
 	
-	var _RegisterContainer = __webpack_require__(399);
+	var _RegisterContainer = __webpack_require__(408);
 	
 	var _RegisterContainer2 = _interopRequireDefault(_RegisterContainer);
 	
-	var _index = __webpack_require__(401);
+	var _index = __webpack_require__(410);
 	
 	var styles = _interopRequireWildcard(_index);
 	
 	var _state = __webpack_require__(321);
 	
-	var _functional = __webpack_require__(361);
+	var _functional = __webpack_require__(363);
 	
-	var _localStorage = __webpack_require__(410);
+	var _localStorage = __webpack_require__(419);
 	
 	var _localStorage2 = _interopRequireDefault(_localStorage);
 	
-	var _constants = __webpack_require__(360);
+	var _constants = __webpack_require__(362);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -24642,9 +24642,9 @@
 	
 	var _ToastBar2 = _interopRequireDefault(_ToastBar);
 	
-	var _api = __webpack_require__(396);
+	var _api = __webpack_require__(398);
 	
-	var _functional = __webpack_require__(361);
+	var _functional = __webpack_require__(363);
 	
 	var _state = __webpack_require__(321);
 	
@@ -28294,7 +28294,7 @@
 	
 	var _state = __webpack_require__(321);
 	
-	var _Toast = __webpack_require__(395);
+	var _Toast = __webpack_require__(397);
 	
 	var _Toast2 = _interopRequireDefault(_Toast);
 	
@@ -28366,13 +28366,21 @@
 	
 	var _cloneDeep2 = _interopRequireDefault(_cloneDeep);
 	
-	var _extend = __webpack_require__(348);
+	var _forEach = __webpack_require__(348);
+	
+	var _forEach2 = _interopRequireDefault(_forEach);
+	
+	var _extend = __webpack_require__(350);
 	
 	var _extend2 = _interopRequireDefault(_extend);
 	
-	var _constants = __webpack_require__(360);
+	var _uniqueId = __webpack_require__(420);
 	
-	var _functional = __webpack_require__(361);
+	var _uniqueId2 = _interopRequireDefault(_uniqueId);
+	
+	var _constants = __webpack_require__(362);
+	
+	var _functional = __webpack_require__(363);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -28406,7 +28414,7 @@
 	  bountys: {}
 	};
 	
-	var listeners = [];
+	var listeners = {};
 	var middlewares = [];
 	
 	var seed = exports.seed = function seed(f) {
@@ -28422,12 +28430,8 @@
 	
 	  var frozenState = Object.freeze(state);
 	
-	  listeners.forEach(function (x) {
-	    return setTimeout(function () {
-	      return (0, _functional.apply)(frozenState, meta)(x);
-	    }, 0);
-	  });
-	  middlewares.forEach((0, _functional.apply)(frozenState, meta));
+	  (0, _forEach2.default)(listeners, (0, _functional.apply)(frozenState, meta));
+	  (0, _forEach2.default)(middlewares, (0, _functional.apply)(frozenState, meta));
 	};
 	
 	var getState = exports.getState = function getState(f) {
@@ -28438,10 +28442,12 @@
 	  return middlewares.push(f) - 1;
 	};
 	var listen = exports.listen = function listen(f) {
-	  return listeners.push(f) - 1;
+	  var id = (0, _uniqueId2.default)('listeners');
+	  listeners[id] = f;
+	  return id;
 	};
 	var silence = exports.silence = function silence(id) {
-	  return listeners = listeners.splice(id, 1);
+	  return delete listeners[id];
 	};
 	
 	var State = exports.State = function (_Component) {
@@ -29344,19 +29350,85 @@
 /* 348 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(349);
+	var arrayEach = __webpack_require__(324),
+	    baseCastFunction = __webpack_require__(349),
+	    baseEach = __webpack_require__(309),
+	    isArray = __webpack_require__(279);
+	
+	/**
+	 * Iterates over elements of `collection` invoking `iteratee` for each element.
+	 * The iteratee is invoked with three arguments: (value, index|key, collection).
+	 * Iteratee functions may exit iteration early by explicitly returning `false`.
+	 *
+	 * **Note:** As with other "Collections" methods, objects with a "length" property
+	 * are iterated like arrays. To avoid this behavior use `_.forIn` or `_.forOwn`
+	 * for object iteration.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @alias each
+	 * @category Collection
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @returns {Array|Object} Returns `collection`.
+	 * @example
+	 *
+	 * _([1, 2]).forEach(function(value) {
+	 *   console.log(value);
+	 * });
+	 * // => logs `1` then `2`
+	 *
+	 * _.forEach({ 'a': 1, 'b': 2 }, function(value, key) {
+	 *   console.log(key);
+	 * });
+	 * // => logs 'a' then 'b' (iteration order is not guaranteed)
+	 */
+	function forEach(collection, iteratee) {
+	  return (typeof iteratee == 'function' && isArray(collection))
+	    ? arrayEach(collection, iteratee)
+	    : baseEach(collection, baseCastFunction(iteratee));
+	}
+	
+	module.exports = forEach;
 
 
 /***/ },
 /* 349 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var identity = __webpack_require__(305);
+	
+	/**
+	 * Casts `value` to `identity` if it's not a function.
+	 *
+	 * @private
+	 * @param {*} value The value to inspect.
+	 * @returns {Array} Returns the array-like object.
+	 */
+	function baseCastFunction(value) {
+	  return typeof value == 'function' ? value : identity;
+	}
+	
+	module.exports = baseCastFunction;
+
+
+/***/ },
+/* 350 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(351);
+
+
+/***/ },
+/* 351 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var assignValue = __webpack_require__(325),
 	    copyObject = __webpack_require__(327),
-	    createAssigner = __webpack_require__(350),
+	    createAssigner = __webpack_require__(352),
 	    isArrayLike = __webpack_require__(275),
 	    isPrototype = __webpack_require__(282),
-	    keysIn = __webpack_require__(356);
+	    keysIn = __webpack_require__(358);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -29410,11 +29482,11 @@
 
 
 /***/ },
-/* 350 */
+/* 352 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isIterateeCall = __webpack_require__(351),
-	    rest = __webpack_require__(352);
+	var isIterateeCall = __webpack_require__(353),
+	    rest = __webpack_require__(354);
 	
 	/**
 	 * Creates a function like `_.assign`.
@@ -29453,7 +29525,7 @@
 
 
 /***/ },
-/* 351 */
+/* 353 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var eq = __webpack_require__(228),
@@ -29487,11 +29559,11 @@
 
 
 /***/ },
-/* 352 */
+/* 354 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var apply = __webpack_require__(353),
-	    toInteger = __webpack_require__(354);
+	var apply = __webpack_require__(355),
+	    toInteger = __webpack_require__(356);
 	
 	/** Used as the `TypeError` message for "Functions" methods. */
 	var FUNC_ERROR_TEXT = 'Expected a function';
@@ -29554,7 +29626,7 @@
 
 
 /***/ },
-/* 353 */
+/* 355 */
 /***/ function(module, exports) {
 
 	/**
@@ -29582,10 +29654,10 @@
 
 
 /***/ },
-/* 354 */
+/* 356 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toNumber = __webpack_require__(355);
+	var toNumber = __webpack_require__(357);
 	
 	/** Used as references for various `Number` constants. */
 	var INFINITY = 1 / 0,
@@ -29632,7 +29704,7 @@
 
 
 /***/ },
-/* 355 */
+/* 357 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var isFunction = __webpack_require__(240),
@@ -29697,10 +29769,10 @@
 
 
 /***/ },
-/* 356 */
+/* 358 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseKeysIn = __webpack_require__(357),
+	var baseKeysIn = __webpack_require__(359),
 	    indexKeys = __webpack_require__(271),
 	    isIndex = __webpack_require__(281),
 	    isPrototype = __webpack_require__(282);
@@ -29757,11 +29829,11 @@
 
 
 /***/ },
-/* 357 */
+/* 359 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Reflect = __webpack_require__(358),
-	    iteratorToArray = __webpack_require__(359);
+	var Reflect = __webpack_require__(360),
+	    iteratorToArray = __webpack_require__(361);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -29799,7 +29871,7 @@
 
 
 /***/ },
-/* 358 */
+/* 360 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var root = __webpack_require__(245);
@@ -29811,7 +29883,7 @@
 
 
 /***/ },
-/* 359 */
+/* 361 */
 /***/ function(module, exports) {
 
 	/**
@@ -29835,7 +29907,7 @@
 
 
 /***/ },
-/* 360 */
+/* 362 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -29846,7 +29918,7 @@
 	var X_ELITEBOUNTY_AUTHENTICATION_HEADER = exports.X_ELITEBOUNTY_AUTHENTICATION_HEADER = 'X-Elitebounty-Authentication';
 
 /***/ },
-/* 361 */
+/* 363 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29856,15 +29928,15 @@
 	});
 	exports.json = exports.isDevelopment = exports.apply = exports.setState = exports.toObject = exports.toHash = undefined;
 	
-	var _reduce = __webpack_require__(362);
+	var _reduce = __webpack_require__(364);
 	
 	var _reduce2 = _interopRequireDefault(_reduce);
 	
-	var _curry = __webpack_require__(364);
+	var _curry = __webpack_require__(366);
 	
 	var _curry2 = _interopRequireDefault(_curry);
 	
-	var _set = __webpack_require__(393);
+	var _set = __webpack_require__(395);
 	
 	var _set2 = _interopRequireDefault(_set);
 	
@@ -29904,13 +29976,13 @@
 	};
 
 /***/ },
-/* 362 */
+/* 364 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var arrayReduce = __webpack_require__(338),
 	    baseEach = __webpack_require__(309),
 	    baseIteratee = __webpack_require__(220),
-	    baseReduce = __webpack_require__(363),
+	    baseReduce = __webpack_require__(365),
 	    isArray = __webpack_require__(279);
 	
 	/**
@@ -29959,7 +30031,7 @@
 
 
 /***/ },
-/* 363 */
+/* 365 */
 /***/ function(module, exports) {
 
 	/**
@@ -29987,10 +30059,10 @@
 
 
 /***/ },
-/* 364 */
+/* 366 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createWrapper = __webpack_require__(365);
+	var createWrapper = __webpack_require__(367);
 	
 	/** Used to compose bitmasks for wrapper metadata. */
 	var CURRY_FLAG = 8;
@@ -30049,18 +30121,18 @@
 
 
 /***/ },
-/* 365 */
+/* 367 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseSetData = __webpack_require__(366),
-	    createBaseWrapper = __webpack_require__(368),
-	    createCurryWrapper = __webpack_require__(370),
-	    createHybridWrapper = __webpack_require__(371),
-	    createPartialWrapper = __webpack_require__(391),
-	    getData = __webpack_require__(379),
-	    mergeData = __webpack_require__(392),
-	    setData = __webpack_require__(386),
-	    toInteger = __webpack_require__(354);
+	var baseSetData = __webpack_require__(368),
+	    createBaseWrapper = __webpack_require__(370),
+	    createCurryWrapper = __webpack_require__(372),
+	    createHybridWrapper = __webpack_require__(373),
+	    createPartialWrapper = __webpack_require__(393),
+	    getData = __webpack_require__(381),
+	    mergeData = __webpack_require__(394),
+	    setData = __webpack_require__(388),
+	    toInteger = __webpack_require__(356);
 	
 	/** Used as the `TypeError` message for "Functions" methods. */
 	var FUNC_ERROR_TEXT = 'Expected a function';
@@ -30160,11 +30232,11 @@
 
 
 /***/ },
-/* 366 */
+/* 368 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var identity = __webpack_require__(305),
-	    metaMap = __webpack_require__(367);
+	    metaMap = __webpack_require__(369);
 	
 	/**
 	 * The base implementation of `setData` without support for hot loop detection.
@@ -30183,7 +30255,7 @@
 
 
 /***/ },
-/* 367 */
+/* 369 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var WeakMap = __webpack_require__(285);
@@ -30195,10 +30267,10 @@
 
 
 /***/ },
-/* 368 */
+/* 370 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createCtorWrapper = __webpack_require__(369),
+	var createCtorWrapper = __webpack_require__(371),
 	    root = __webpack_require__(245);
 	
 	/** Used to compose bitmasks for wrapper metadata. */
@@ -30229,7 +30301,7 @@
 
 
 /***/ },
-/* 369 */
+/* 371 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var baseCreate = __webpack_require__(345),
@@ -30272,15 +30344,15 @@
 
 
 /***/ },
-/* 370 */
+/* 372 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var apply = __webpack_require__(353),
-	    createCtorWrapper = __webpack_require__(369),
-	    createHybridWrapper = __webpack_require__(371),
-	    createRecurryWrapper = __webpack_require__(375),
-	    getPlaceholder = __webpack_require__(388),
-	    replaceHolders = __webpack_require__(390),
+	var apply = __webpack_require__(355),
+	    createCtorWrapper = __webpack_require__(371),
+	    createHybridWrapper = __webpack_require__(373),
+	    createRecurryWrapper = __webpack_require__(377),
+	    getPlaceholder = __webpack_require__(390),
+	    replaceHolders = __webpack_require__(392),
 	    root = __webpack_require__(245);
 	
 	/**
@@ -30324,17 +30396,17 @@
 
 
 /***/ },
-/* 371 */
+/* 373 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var composeArgs = __webpack_require__(372),
-	    composeArgsRight = __webpack_require__(373),
-	    countHolders = __webpack_require__(374),
-	    createCtorWrapper = __webpack_require__(369),
-	    createRecurryWrapper = __webpack_require__(375),
-	    getPlaceholder = __webpack_require__(388),
-	    reorder = __webpack_require__(389),
-	    replaceHolders = __webpack_require__(390),
+	var composeArgs = __webpack_require__(374),
+	    composeArgsRight = __webpack_require__(375),
+	    countHolders = __webpack_require__(376),
+	    createCtorWrapper = __webpack_require__(371),
+	    createRecurryWrapper = __webpack_require__(377),
+	    getPlaceholder = __webpack_require__(390),
+	    reorder = __webpack_require__(391),
+	    replaceHolders = __webpack_require__(392),
 	    root = __webpack_require__(245);
 	
 	/** Used to compose bitmasks for wrapper metadata. */
@@ -30420,7 +30492,7 @@
 
 
 /***/ },
-/* 372 */
+/* 374 */
 /***/ function(module, exports) {
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
@@ -30465,7 +30537,7 @@
 
 
 /***/ },
-/* 373 */
+/* 375 */
 /***/ function(module, exports) {
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
@@ -30512,7 +30584,7 @@
 
 
 /***/ },
-/* 374 */
+/* 376 */
 /***/ function(module, exports) {
 
 	/**
@@ -30539,12 +30611,12 @@
 
 
 /***/ },
-/* 375 */
+/* 377 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var copyArray = __webpack_require__(330),
-	    isLaziable = __webpack_require__(376),
-	    setData = __webpack_require__(386);
+	    isLaziable = __webpack_require__(378),
+	    setData = __webpack_require__(388);
 	
 	/** Used to compose bitmasks for wrapper metadata. */
 	var BIND_FLAG = 1,
@@ -30601,13 +30673,13 @@
 
 
 /***/ },
-/* 376 */
+/* 378 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var LazyWrapper = __webpack_require__(377),
-	    getData = __webpack_require__(379),
-	    getFuncName = __webpack_require__(381),
-	    lodash = __webpack_require__(383);
+	var LazyWrapper = __webpack_require__(379),
+	    getData = __webpack_require__(381),
+	    getFuncName = __webpack_require__(383),
+	    lodash = __webpack_require__(385);
 	
 	/**
 	 * Checks if `func` has a lazy counterpart.
@@ -30634,11 +30706,11 @@
 
 
 /***/ },
-/* 377 */
+/* 379 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var baseCreate = __webpack_require__(345),
-	    baseLodash = __webpack_require__(378);
+	    baseLodash = __webpack_require__(380);
 	
 	/** Used as references for the maximum length and index of an array. */
 	var MAX_ARRAY_LENGTH = 4294967295;
@@ -30667,7 +30739,7 @@
 
 
 /***/ },
-/* 378 */
+/* 380 */
 /***/ function(module, exports) {
 
 	/**
@@ -30683,11 +30755,11 @@
 
 
 /***/ },
-/* 379 */
+/* 381 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var metaMap = __webpack_require__(367),
-	    noop = __webpack_require__(380);
+	var metaMap = __webpack_require__(369),
+	    noop = __webpack_require__(382);
 	
 	/**
 	 * Gets metadata for `func`.
@@ -30704,7 +30776,7 @@
 
 
 /***/ },
-/* 380 */
+/* 382 */
 /***/ function(module, exports) {
 
 	/**
@@ -30729,10 +30801,10 @@
 
 
 /***/ },
-/* 381 */
+/* 383 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var realNames = __webpack_require__(382);
+	var realNames = __webpack_require__(384);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -30766,7 +30838,7 @@
 
 
 /***/ },
-/* 382 */
+/* 384 */
 /***/ function(module, exports) {
 
 	/** Used to lookup unminified function names. */
@@ -30776,15 +30848,15 @@
 
 
 /***/ },
-/* 383 */
+/* 385 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var LazyWrapper = __webpack_require__(377),
-	    LodashWrapper = __webpack_require__(384),
-	    baseLodash = __webpack_require__(378),
+	var LazyWrapper = __webpack_require__(379),
+	    LodashWrapper = __webpack_require__(386),
+	    baseLodash = __webpack_require__(380),
 	    isArray = __webpack_require__(279),
 	    isObjectLike = __webpack_require__(243),
-	    wrapperClone = __webpack_require__(385);
+	    wrapperClone = __webpack_require__(387);
 	
 	/** Used for built-in method references. */
 	var objectProto = Object.prototype;
@@ -30926,11 +30998,11 @@
 
 
 /***/ },
-/* 384 */
+/* 386 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var baseCreate = __webpack_require__(345),
-	    baseLodash = __webpack_require__(378);
+	    baseLodash = __webpack_require__(380);
 	
 	/**
 	 * The base constructor for creating `lodash` wrapper objects.
@@ -30954,11 +31026,11 @@
 
 
 /***/ },
-/* 385 */
+/* 387 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var LazyWrapper = __webpack_require__(377),
-	    LodashWrapper = __webpack_require__(384),
+	var LazyWrapper = __webpack_require__(379),
+	    LodashWrapper = __webpack_require__(386),
 	    copyArray = __webpack_require__(330);
 	
 	/**
@@ -30983,11 +31055,11 @@
 
 
 /***/ },
-/* 386 */
+/* 388 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseSetData = __webpack_require__(366),
-	    now = __webpack_require__(387);
+	var baseSetData = __webpack_require__(368),
+	    now = __webpack_require__(389);
 	
 	/** Used to detect hot functions by number of calls within a span of milliseconds. */
 	var HOT_COUNT = 150,
@@ -31030,7 +31102,7 @@
 
 
 /***/ },
-/* 387 */
+/* 389 */
 /***/ function(module, exports) {
 
 	/**
@@ -31055,7 +31127,7 @@
 
 
 /***/ },
-/* 388 */
+/* 390 */
 /***/ function(module, exports) {
 
 	/**
@@ -31074,7 +31146,7 @@
 
 
 /***/ },
-/* 389 */
+/* 391 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var copyArray = __webpack_require__(330),
@@ -31109,7 +31181,7 @@
 
 
 /***/ },
-/* 390 */
+/* 392 */
 /***/ function(module, exports) {
 
 	/** Used as the internal argument placeholder. */
@@ -31144,11 +31216,11 @@
 
 
 /***/ },
-/* 391 */
+/* 393 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var apply = __webpack_require__(353),
-	    createCtorWrapper = __webpack_require__(369),
+	var apply = __webpack_require__(355),
+	    createCtorWrapper = __webpack_require__(371),
 	    root = __webpack_require__(245);
 	
 	/** Used to compose bitmasks for wrapper metadata. */
@@ -31193,13 +31265,13 @@
 
 
 /***/ },
-/* 392 */
+/* 394 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var composeArgs = __webpack_require__(372),
-	    composeArgsRight = __webpack_require__(373),
+	var composeArgs = __webpack_require__(374),
+	    composeArgsRight = __webpack_require__(375),
 	    copyArray = __webpack_require__(330),
-	    replaceHolders = __webpack_require__(390);
+	    replaceHolders = __webpack_require__(392);
 	
 	/** Used as the internal argument placeholder. */
 	var PLACEHOLDER = '__lodash_placeholder__';
@@ -31289,10 +31361,10 @@
 
 
 /***/ },
-/* 393 */
+/* 395 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseSet = __webpack_require__(394);
+	var baseSet = __webpack_require__(396);
 	
 	/**
 	 * Sets the value at `path` of `object`. If a portion of `path` doesn't exist
@@ -31329,7 +31401,7 @@
 
 
 /***/ },
-/* 394 */
+/* 396 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var assignValue = __webpack_require__(325),
@@ -31380,7 +31452,7 @@
 
 
 /***/ },
-/* 395 */
+/* 397 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31437,7 +31509,7 @@
 	
 	      var toast = this.props.toast;
 	
-	      debugger;
+	
 	      if (timeoutId) {
 	        clearTimeout(timeoutId);
 	      }
@@ -31465,7 +31537,7 @@
 	exports.default = ToastBar;
 
 /***/ },
-/* 396 */
+/* 398 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31477,19 +31549,19 @@
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _isomorphicFetch = __webpack_require__(411);
+	var _isomorphicFetch = __webpack_require__(399);
 	
 	var _isomorphicFetch2 = _interopRequireDefault(_isomorphicFetch);
 	
-	var _es6Promise = __webpack_require__(413);
+	var _es6Promise = __webpack_require__(401);
 	
-	var _functional = __webpack_require__(361);
+	var _functional = __webpack_require__(363);
 	
 	var _state = __webpack_require__(321);
 	
-	var _constants = __webpack_require__(360);
+	var _constants = __webpack_require__(362);
 	
-	var _toast = __webpack_require__(417);
+	var _toast = __webpack_require__(405);
 	
 	var _toast2 = _interopRequireDefault(_toast);
 	
@@ -31641,985 +31713,19 @@
 	};
 
 /***/ },
-/* 397 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _Login = __webpack_require__(398);
-	
-	var _Login2 = _interopRequireDefault(_Login);
-	
-	var _ToastBar = __webpack_require__(320);
-	
-	var _ToastBar2 = _interopRequireDefault(_ToastBar);
-	
-	var _state = __webpack_require__(321);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var map = function map(_ref) {
-	  var user = _ref.user;
-	  var api = _ref.api;
-	
-	  return { user: user, api: api };
-	};
-	
-	var LoginContainer = function (_Component) {
-	  _inherits(LoginContainer, _Component);
-	
-	  function LoginContainer() {
-	    _classCallCheck(this, LoginContainer);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(LoginContainer).apply(this, arguments));
-	  }
-	
-	  _createClass(LoginContainer, [{
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        null,
-	        _react2.default.createElement(_ToastBar2.default, null),
-	        _react2.default.createElement(
-	          _state.State,
-	          _extends({ map: map }, this.props),
-	          _react2.default.createElement(_Login2.default, null)
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return LoginContainer;
-	}(_react.Component);
-
-	exports.default = LoginContainer;
-
-/***/ },
-/* 398 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _reactRouter = __webpack_require__(158);
-	
-	var _api = __webpack_require__(396);
-	
-	var _state = __webpack_require__(321);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Login = function (_Component) {
-	  _inherits(Login, _Component);
-	
-	  function Login(props, context) {
-	    _classCallCheck(this, Login);
-	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Login).call(this, props));
-	
-	    var isLoggedIn = props.user.isLoggedIn;
-	
-	
-	    if (isLoggedIn) {
-	      setTimeout(function () {
-	        return context.router.push('/app');
-	      }, 0);
-	    }
-	    return _this;
-	  }
-	
-	  _createClass(Login, [{
-	    key: 'login',
-	    value: function login(e) {
-	      var _this2 = this;
-	
-	      var _props$user = this.props.user;
-	      var username = _props$user.username;
-	      var password = _props$user.password;
-	
-	
-	      e.preventDefault();
-	
-	      _api.authentication.login(username, password).then(function () {
-	        _this2.context.router.push('/app');
-	      });
-	    }
-	  }, {
-	    key: 'handleChangeUsername',
-	    value: function handleChangeUsername(e) {
-	      (0, _state.update)(function (state) {
-	        return { user: _extends({}, state.user, { username: e.target.value }) };
-	      });
-	    }
-	  }, {
-	    key: 'handleChangePassword',
-	    value: function handleChangePassword(e) {
-	      (0, _state.update)(function (state) {
-	        return { user: _extends({}, state.user, { password: e.target.value }) };
-	      });
-	    }
-	  }, {
-	    key: 'toggleRememberMe',
-	    value: function toggleRememberMe() {
-	      (0, _state.update)(function (state) {
-	        return { user: _extends({}, state.user, { rememberMe: !state.user.rememeberMe }) };
-	      });
-	    }
-	  }, {
-	    key: 'renderButton',
-	    value: function renderButton() {
-	      var loading = this.props.api.loading;
-	
-	
-	      return !!loading[_api.api.routes.login()] ? _react2.default.createElement(
-	        'button',
-	        { disabled: true, type: 'button', className: 'btn btn-primary btn-lg btn-block' },
-	        'Logging In...'
-	      ) : _react2.default.createElement(
-	        'button',
-	        { onClick: this.login.bind(this), type: 'button', className: 'btn btn-primary btn-lg btn-block' },
-	        'Login'
-	      );
-	    }
-	  }, {
-	    key: 'handleKeyDown',
-	    value: function handleKeyDown(e) {
-	      if (e.which === 13) {
-	        this.login(e);
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'container-fluid login-container' },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'col-xs-offset-4 col-xs-4', onKeyDown: this.handleKeyDown.bind(this) },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group' },
-	            _react2.default.createElement(
-	              'label',
-	              { htmlFor: 'email' },
-	              'Email address'
-	            ),
-	            _react2.default.createElement('input', { onChange: this.handleChangeUsername.bind(this), type: 'email', className: 'form-control', id: 'email', placeholder: 'Email' })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group' },
-	            _react2.default.createElement(
-	              'label',
-	              { htmlFor: 'password' },
-	              'Password'
-	            ),
-	            _react2.default.createElement('input', { onChange: this.handleChangePassword.bind(this), type: 'password', className: 'form-control', id: 'password', placeholder: 'Password' })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group' },
-	            _react2.default.createElement(
-	              _reactRouter.Link,
-	              { to: '/register' },
-	              'Register'
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'checkbox' },
-	            _react2.default.createElement(
-	              'label',
-	              null,
-	              _react2.default.createElement('input', { onClick: this.toggleRememberMe.bind(this), type: 'checkbox' }),
-	              ' Remember Me'
-	            )
-	          ),
-	          this.renderButton()
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return Login;
-	}(_react.Component);
-	
-	Login.contextTypes = {
-	  router: _react.PropTypes.object.isRequired
-	};
-	exports.default = Login;
-
-/***/ },
 /* 399 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _Register = __webpack_require__(400);
-	
-	var _Register2 = _interopRequireDefault(_Register);
-	
-	var _ToastBar = __webpack_require__(320);
-	
-	var _ToastBar2 = _interopRequireDefault(_ToastBar);
-	
-	var _state = __webpack_require__(321);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var map = function map(_ref) {
-	  var user = _ref.user;
-	  var api = _ref.api;
-	
-	  return { user: user, api: api };
-	};
-	
-	var RegisterContainer = function (_Component) {
-	  _inherits(RegisterContainer, _Component);
-	
-	  function RegisterContainer() {
-	    _classCallCheck(this, RegisterContainer);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(RegisterContainer).apply(this, arguments));
-	  }
-	
-	  _createClass(RegisterContainer, [{
-	    key: 'render',
-	    value: function render() {
-	      return _react2.default.createElement(
-	        'div',
-	        null,
-	        _react2.default.createElement(_ToastBar2.default, null),
-	        _react2.default.createElement(
-	          _state.State,
-	          { map: map },
-	          _react2.default.createElement(_Register2.default, null)
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return RegisterContainer;
-	}(_react.Component);
-
-	exports.default = RegisterContainer;
-
-/***/ },
-/* 400 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _reactRouter = __webpack_require__(158);
-	
-	var _api = __webpack_require__(396);
-	
-	var _state = __webpack_require__(321);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Login = function (_Component) {
-	  _inherits(Login, _Component);
-	
-	  function Login() {
-	    _classCallCheck(this, Login);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Login).apply(this, arguments));
-	  }
-	
-	  _createClass(Login, [{
-	    key: 'register',
-	    value: function register() {
-	      var _this2 = this;
-	
-	      var _props$user$register = this.props.user.register;
-	      var username = _props$user$register.username;
-	      var password = _props$user$register.password;
-	      var confirmPassword = _props$user$register.confirmPassword;
-	
-	
-	      this.doPasswordsMatch() && _api.player.register(username, password, confirmPassword).then(function () {
-	        return _this2.context.router.push('/');
-	      });
-	    }
-	  }, {
-	    key: 'handleChangeUsername',
-	    value: function handleChangeUsername(e) {
-	      (0, _state.update)(function (state) {
-	        return { user: { register: _extends({}, state.user.register, { username: e.target.value }) } };
-	      });
-	    }
-	  }, {
-	    key: 'handleChangePassword',
-	    value: function handleChangePassword(e) {
-	      (0, _state.update)(function (state) {
-	        return { user: { register: _extends({}, state.user.register, { password: e.target.value }) } };
-	      });
-	    }
-	  }, {
-	    key: 'handleChangeConfirmPassword',
-	    value: function handleChangeConfirmPassword(e) {
-	      (0, _state.update)(function (state) {
-	        return { user: { register: _extends({}, state.user.register, { confirmPassword: e.target.value }) } };
-	      });
-	    }
-	  }, {
-	    key: 'toggleRememberMe',
-	    value: function toggleRememberMe() {
-	      (0, _state.update)(function (state) {
-	        return { user: { register: _extends({}, state.user.register, { rememberMe: !state.user.rememeberMe }) } };
-	      });
-	    }
-	  }, {
-	    key: 'renderButton',
-	    value: function renderButton() {
-	      var loading = this.props.api.loading;
-	
-	
-	      return !!loading[_api.api.routes.register()] ? _react2.default.createElement(
-	        'button',
-	        { disabled: true, type: 'button', className: 'btn btn-primary btn-lg btn-block' },
-	        'Registering...'
-	      ) : _react2.default.createElement(
-	        'button',
-	        { onClick: this.register.bind(this), type: 'button', className: 'btn btn-primary btn-lg btn-block' },
-	        'Register'
-	      );
-	    }
-	  }, {
-	    key: 'doPasswordsMatch',
-	    value: function doPasswordsMatch() {
-	      var _props$user$register2 = this.props.user.register;
-	      var password = _props$user$register2.password;
-	      var confirmPassword = _props$user$register2.confirmPassword;
-	
-	      return password === confirmPassword;
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var passwordErrorClass = this.doPasswordsMatch() ? '' : 'has-error';
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'container-fluid login-container' },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'col-xs-offset-4 col-xs-4' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group' },
-	            _react2.default.createElement(
-	              'label',
-	              { htmlFor: 'email' },
-	              'Email address'
-	            ),
-	            _react2.default.createElement('input', { onChange: this.handleChangeUsername.bind(this), type: 'email', className: 'form-control', id: 'email', placeholder: 'Email' })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group ' + passwordErrorClass },
-	            _react2.default.createElement(
-	              'label',
-	              { htmlFor: 'password' },
-	              'Password'
-	            ),
-	            _react2.default.createElement('input', { onChange: this.handleChangePassword.bind(this), type: 'password', className: 'form-control', id: 'password', placeholder: 'Password' })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group ' + passwordErrorClass },
-	            _react2.default.createElement(
-	              'label',
-	              { htmlFor: 'confirmPassword' },
-	              'Confirm Password'
-	            ),
-	            _react2.default.createElement('input', { onChange: this.handleChangeConfirmPassword.bind(this), type: 'password', className: 'form-control', id: 'confirmPassword', placeholder: 'Confirm Password' })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'form-group' },
-	            _react2.default.createElement(
-	              _reactRouter.Link,
-	              { to: '/' },
-	              'Login'
-	            )
-	          ),
-	          this.renderButton()
-	        )
-	      );
-	    }
-	  }]);
-	
-	  return Login;
-	}(_react.Component);
-	
-	Login.contextTypes = {
-	  router: _react.PropTypes.object.isRequired
-	};
-	exports.default = Login;
-
-/***/ },
-/* 401 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _bountyTable = __webpack_require__(402);
-	
-	var bountyTable = _interopRequireWildcard(_bountyTable);
-	
-	var _login = __webpack_require__(406);
-	
-	var login = _interopRequireWildcard(_login);
-	
-	var _toast = __webpack_require__(408);
-	
-	var toast = _interopRequireWildcard(_toast);
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-/***/ },
-/* 402 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(403);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(405)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./bounty-table.css", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./bounty-table.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 403 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(404)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".bounty-heading {\n  font-weight: bold;\n}\n\n.bounty-data-row {\n  padding-top: 10px;\n  padding-bottom: 10px;\n  padding-left: 15px;\n}\n\n.bounty-data-row:hover {\n  background: #EEEEEE;\n  cursor: pointer;\n}\n", ""]);
-	
-	// exports
-
-
-/***/ },
-/* 404 */
-/***/ function(module, exports) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function() {
-		var list = [];
-	
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for(var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if(item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-	
-		// import a list of modules into the list
-		list.i = function(modules, mediaQuery) {
-			if(typeof modules === "string")
-				modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for(var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if(typeof id === "number")
-					alreadyImportedModules[id] = true;
-			}
-			for(i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if(mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if(mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-
-/***/ },
-/* 405 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	var stylesInDom = {},
-		memoize = function(fn) {
-			var memo;
-			return function () {
-				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-				return memo;
-			};
-		},
-		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
-		}),
-		getHeadElement = memoize(function () {
-			return document.head || document.getElementsByTagName("head")[0];
-		}),
-		singletonElement = null,
-		singletonCounter = 0,
-		styleElementsInsertedAtTop = [];
-	
-	module.exports = function(list, options) {
-		if(false) {
-			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-		}
-	
-		options = options || {};
-		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-		// tags it will allow on a page
-		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-	
-		// By default, add <style> tags to the bottom of <head>.
-		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-	
-		var styles = listToStyles(list);
-		addStylesToDom(styles, options);
-	
-		return function update(newList) {
-			var mayRemove = [];
-			for(var i = 0; i < styles.length; i++) {
-				var item = styles[i];
-				var domStyle = stylesInDom[item.id];
-				domStyle.refs--;
-				mayRemove.push(domStyle);
-			}
-			if(newList) {
-				var newStyles = listToStyles(newList);
-				addStylesToDom(newStyles, options);
-			}
-			for(var i = 0; i < mayRemove.length; i++) {
-				var domStyle = mayRemove[i];
-				if(domStyle.refs === 0) {
-					for(var j = 0; j < domStyle.parts.length; j++)
-						domStyle.parts[j]();
-					delete stylesInDom[domStyle.id];
-				}
-			}
-		};
-	}
-	
-	function addStylesToDom(styles, options) {
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			if(domStyle) {
-				domStyle.refs++;
-				for(var j = 0; j < domStyle.parts.length; j++) {
-					domStyle.parts[j](item.parts[j]);
-				}
-				for(; j < item.parts.length; j++) {
-					domStyle.parts.push(addStyle(item.parts[j], options));
-				}
-			} else {
-				var parts = [];
-				for(var j = 0; j < item.parts.length; j++) {
-					parts.push(addStyle(item.parts[j], options));
-				}
-				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-			}
-		}
-	}
-	
-	function listToStyles(list) {
-		var styles = [];
-		var newStyles = {};
-		for(var i = 0; i < list.length; i++) {
-			var item = list[i];
-			var id = item[0];
-			var css = item[1];
-			var media = item[2];
-			var sourceMap = item[3];
-			var part = {css: css, media: media, sourceMap: sourceMap};
-			if(!newStyles[id])
-				styles.push(newStyles[id] = {id: id, parts: [part]});
-			else
-				newStyles[id].parts.push(part);
-		}
-		return styles;
-	}
-	
-	function insertStyleElement(options, styleElement) {
-		var head = getHeadElement();
-		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-		if (options.insertAt === "top") {
-			if(!lastStyleElementInsertedAtTop) {
-				head.insertBefore(styleElement, head.firstChild);
-			} else if(lastStyleElementInsertedAtTop.nextSibling) {
-				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-			} else {
-				head.appendChild(styleElement);
-			}
-			styleElementsInsertedAtTop.push(styleElement);
-		} else if (options.insertAt === "bottom") {
-			head.appendChild(styleElement);
-		} else {
-			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-		}
-	}
-	
-	function removeStyleElement(styleElement) {
-		styleElement.parentNode.removeChild(styleElement);
-		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-		if(idx >= 0) {
-			styleElementsInsertedAtTop.splice(idx, 1);
-		}
-	}
-	
-	function createStyleElement(options) {
-		var styleElement = document.createElement("style");
-		styleElement.type = "text/css";
-		insertStyleElement(options, styleElement);
-		return styleElement;
-	}
-	
-	function createLinkElement(options) {
-		var linkElement = document.createElement("link");
-		linkElement.rel = "stylesheet";
-		insertStyleElement(options, linkElement);
-		return linkElement;
-	}
-	
-	function addStyle(obj, options) {
-		var styleElement, update, remove;
-	
-		if (options.singleton) {
-			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement(options));
-			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-		} else if(obj.sourceMap &&
-			typeof URL === "function" &&
-			typeof URL.createObjectURL === "function" &&
-			typeof URL.revokeObjectURL === "function" &&
-			typeof Blob === "function" &&
-			typeof btoa === "function") {
-			styleElement = createLinkElement(options);
-			update = updateLink.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-				if(styleElement.href)
-					URL.revokeObjectURL(styleElement.href);
-			};
-		} else {
-			styleElement = createStyleElement(options);
-			update = applyToTag.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-			};
-		}
-	
-		update(obj);
-	
-		return function updateStyle(newObj) {
-			if(newObj) {
-				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-					return;
-				update(obj = newObj);
-			} else {
-				remove();
-			}
-		};
-	}
-	
-	var replaceText = (function () {
-		var textStore = [];
-	
-		return function (index, replacement) {
-			textStore[index] = replacement;
-			return textStore.filter(Boolean).join('\n');
-		};
-	})();
-	
-	function applyToSingletonTag(styleElement, index, remove, obj) {
-		var css = remove ? "" : obj.css;
-	
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = replaceText(index, css);
-		} else {
-			var cssNode = document.createTextNode(css);
-			var childNodes = styleElement.childNodes;
-			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-			if (childNodes.length) {
-				styleElement.insertBefore(cssNode, childNodes[index]);
-			} else {
-				styleElement.appendChild(cssNode);
-			}
-		}
-	}
-	
-	function applyToTag(styleElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-		var sourceMap = obj.sourceMap;
-	
-		if(media) {
-			styleElement.setAttribute("media", media)
-		}
-	
-		if(styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-			while(styleElement.firstChild) {
-				styleElement.removeChild(styleElement.firstChild);
-			}
-			styleElement.appendChild(document.createTextNode(css));
-		}
-	}
-	
-	function updateLink(linkElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-		var sourceMap = obj.sourceMap;
-	
-		if(sourceMap) {
-			// http://stackoverflow.com/a/26603875
-			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-		}
-	
-		var blob = new Blob([css], { type: "text/css" });
-	
-		var oldSrc = linkElement.href;
-	
-		linkElement.href = URL.createObjectURL(blob);
-	
-		if(oldSrc)
-			URL.revokeObjectURL(oldSrc);
-	}
-
-
-/***/ },
-/* 406 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(407);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(405)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./login.css", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./login.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 407 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(404)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".login-container {\n  padding-top: 15%;\n}\n", ""]);
-	
-	// exports
-
-
-/***/ },
-/* 408 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(409);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(405)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./toast.css", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./toast.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 409 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(404)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".toast-bar {\n  position: relative;\n}\n\n.toast {\n  right: 0;\n  position: absolute;\n  background-color: red;\n  padding: 10px;\n  margin-top: 10px;\n  margin-right: 15px;\n  z-index: 1;\n  border-radius: 3px;\n  box-shadow: 0 0 12px #999;\n  color: #333;\n  opacity: 0.7;\n  border: 1px solid;\n  background-color: white;\n  white-space: pre-wrap;\n  white-space: -moz-pre-wrap;\n  white-space: -o-pre-wrap;\n  word-wrap: break-word;\n}\n\n.toast-failure {\n  border-color: #bd362f;\n}\n\n.toast-success {\n  border-color: #51a351;\n}\n\n.toast:hover {\n  opacity: 1;\n  cursor: pointer;\n}\n", ""]);
-	
-	// exports
-
-
-/***/ },
-/* 410 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var keys = exports.keys = {
-	  application: 'elite-bounty-state'
-	};
-	
-	exports.default = function (key) {
-	  var api = {
-	    __value: localStorage.getItem(key) || null,
-	    get value() {
-	      return JSON.parse(api.__value);
-	    },
-	    set value(value) {
-	      api.__value = JSON.stringify(value);
-	      localStorage.setItem(key, api.__value);
-	    }
-	  };
-	  return api;
-	};
-
-/***/ },
-/* 411 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// the whatwg-fetch polyfill installs the fetch() function
 	// on the global object (window or self)
 	//
 	// Return that as the export for use in Webpack, Browserify etc.
-	__webpack_require__(412);
+	__webpack_require__(400);
 	module.exports = self.fetch.bind(self);
 
 
 /***/ },
-/* 412 */
+/* 400 */
 /***/ function(module, exports) {
 
 	(function(self) {
@@ -33014,10 +32120,10 @@
 
 
 /***/ },
-/* 413 */
+/* 401 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -33147,7 +32253,7 @@
 	    function lib$es6$promise$asap$$attemptVertx() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(415);
+	        var vertx = __webpack_require__(403);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -33960,7 +33066,7 @@
 	    };
 	
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(416)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(404)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -33972,10 +33078,10 @@
 	}).call(this);
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(414), (function() { return this; }()), __webpack_require__(246)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(402), (function() { return this; }()), __webpack_require__(246)(module)))
 
 /***/ },
-/* 414 */
+/* 402 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -34072,20 +33178,20 @@
 
 
 /***/ },
-/* 415 */
+/* 403 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 416 */
+/* 404 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 417 */
+/* 405 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34122,6 +33228,1005 @@
 	    });
 	  });
 	};
+
+/***/ },
+/* 406 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _Login = __webpack_require__(407);
+	
+	var _Login2 = _interopRequireDefault(_Login);
+	
+	var _ToastBar = __webpack_require__(320);
+	
+	var _ToastBar2 = _interopRequireDefault(_ToastBar);
+	
+	var _state = __webpack_require__(321);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var map = function map(_ref) {
+	  var user = _ref.user;
+	  var api = _ref.api;
+	
+	  return { user: user, api: api };
+	};
+	
+	var LoginContainer = function (_Component) {
+	  _inherits(LoginContainer, _Component);
+	
+	  function LoginContainer() {
+	    _classCallCheck(this, LoginContainer);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(LoginContainer).apply(this, arguments));
+	  }
+	
+	  _createClass(LoginContainer, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(_ToastBar2.default, null),
+	        _react2.default.createElement(
+	          _state.State,
+	          _extends({ map: map }, this.props),
+	          _react2.default.createElement(_Login2.default, null)
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return LoginContainer;
+	}(_react.Component);
+
+	exports.default = LoginContainer;
+
+/***/ },
+/* 407 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactRouter = __webpack_require__(158);
+	
+	var _api = __webpack_require__(398);
+	
+	var _state = __webpack_require__(321);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Login = function (_Component) {
+	  _inherits(Login, _Component);
+	
+	  function Login(props, context) {
+	    _classCallCheck(this, Login);
+	
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Login).call(this, props));
+	
+	    var isLoggedIn = props.user.isLoggedIn;
+	
+	
+	    if (isLoggedIn) {
+	      setTimeout(function () {
+	        return context.router.push('/app');
+	      }, 0);
+	    }
+	    return _this;
+	  }
+	
+	  _createClass(Login, [{
+	    key: 'login',
+	    value: function login(e) {
+	      var _this2 = this;
+	
+	      var _props$user = this.props.user;
+	      var username = _props$user.username;
+	      var password = _props$user.password;
+	
+	
+	      e.preventDefault();
+	
+	      _api.authentication.login(username, password).then(function () {
+	        _this2.context.router.push('/app');
+	      });
+	    }
+	  }, {
+	    key: 'handleChangeUsername',
+	    value: function handleChangeUsername(e) {
+	      (0, _state.update)(function (state) {
+	        return { user: _extends({}, state.user, { username: e.target.value }) };
+	      });
+	    }
+	  }, {
+	    key: 'handleChangePassword',
+	    value: function handleChangePassword(e) {
+	      (0, _state.update)(function (state) {
+	        return { user: _extends({}, state.user, { password: e.target.value }) };
+	      });
+	    }
+	  }, {
+	    key: 'toggleRememberMe',
+	    value: function toggleRememberMe() {
+	      (0, _state.update)(function (state) {
+	        return { user: _extends({}, state.user, { rememberMe: !state.user.rememeberMe }) };
+	      });
+	    }
+	  }, {
+	    key: 'renderButton',
+	    value: function renderButton() {
+	      var loading = this.props.api.loading;
+	
+	
+	      return !!loading[_api.api.routes.login()] ? _react2.default.createElement(
+	        'button',
+	        { disabled: true, type: 'button', className: 'btn btn-primary btn-lg btn-block' },
+	        'Logging In...'
+	      ) : _react2.default.createElement(
+	        'button',
+	        { onClick: this.login.bind(this), type: 'button', className: 'btn btn-primary btn-lg btn-block' },
+	        'Login'
+	      );
+	    }
+	  }, {
+	    key: 'handleKeyDown',
+	    value: function handleKeyDown(e) {
+	      if (e.which === 13) {
+	        this.login(e);
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'container-fluid login-container' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'col-xs-offset-4 col-xs-4', onKeyDown: this.handleKeyDown.bind(this) },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'email' },
+	              'Email address'
+	            ),
+	            _react2.default.createElement('input', { onChange: this.handleChangeUsername.bind(this), type: 'email', className: 'form-control', id: 'email', placeholder: 'Email' })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'password' },
+	              'Password'
+	            ),
+	            _react2.default.createElement('input', { onChange: this.handleChangePassword.bind(this), type: 'password', className: 'form-control', id: 'password', placeholder: 'Password' })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              _reactRouter.Link,
+	              { to: '/register' },
+	              'Register'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'checkbox' },
+	            _react2.default.createElement(
+	              'label',
+	              null,
+	              _react2.default.createElement('input', { onClick: this.toggleRememberMe.bind(this), type: 'checkbox' }),
+	              ' Remember Me'
+	            )
+	          ),
+	          this.renderButton()
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Login;
+	}(_react.Component);
+	
+	Login.contextTypes = {
+	  router: _react.PropTypes.object.isRequired
+	};
+	exports.default = Login;
+
+/***/ },
+/* 408 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _Register = __webpack_require__(409);
+	
+	var _Register2 = _interopRequireDefault(_Register);
+	
+	var _ToastBar = __webpack_require__(320);
+	
+	var _ToastBar2 = _interopRequireDefault(_ToastBar);
+	
+	var _state = __webpack_require__(321);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var map = function map(_ref) {
+	  var user = _ref.user;
+	  var api = _ref.api;
+	
+	  return { user: user, api: api };
+	};
+	
+	var RegisterContainer = function (_Component) {
+	  _inherits(RegisterContainer, _Component);
+	
+	  function RegisterContainer() {
+	    _classCallCheck(this, RegisterContainer);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(RegisterContainer).apply(this, arguments));
+	  }
+	
+	  _createClass(RegisterContainer, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(_ToastBar2.default, null),
+	        _react2.default.createElement(
+	          _state.State,
+	          { map: map },
+	          _react2.default.createElement(_Register2.default, null)
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return RegisterContainer;
+	}(_react.Component);
+
+	exports.default = RegisterContainer;
+
+/***/ },
+/* 409 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactRouter = __webpack_require__(158);
+	
+	var _api = __webpack_require__(398);
+	
+	var _state = __webpack_require__(321);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Login = function (_Component) {
+	  _inherits(Login, _Component);
+	
+	  function Login() {
+	    _classCallCheck(this, Login);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Login).apply(this, arguments));
+	  }
+	
+	  _createClass(Login, [{
+	    key: 'register',
+	    value: function register() {
+	      var _this2 = this;
+	
+	      var _props$user$register = this.props.user.register;
+	      var username = _props$user$register.username;
+	      var password = _props$user$register.password;
+	      var confirmPassword = _props$user$register.confirmPassword;
+	
+	
+	      this.doPasswordsMatch() && _api.player.register(username, password, confirmPassword).then(function () {
+	        return _this2.context.router.push('/');
+	      });
+	    }
+	  }, {
+	    key: 'handleChangeUsername',
+	    value: function handleChangeUsername(e) {
+	      (0, _state.update)(function (state) {
+	        return { user: { register: _extends({}, state.user.register, { username: e.target.value }) } };
+	      });
+	    }
+	  }, {
+	    key: 'handleChangePassword',
+	    value: function handleChangePassword(e) {
+	      (0, _state.update)(function (state) {
+	        return { user: { register: _extends({}, state.user.register, { password: e.target.value }) } };
+	      });
+	    }
+	  }, {
+	    key: 'handleChangeConfirmPassword',
+	    value: function handleChangeConfirmPassword(e) {
+	      (0, _state.update)(function (state) {
+	        return { user: { register: _extends({}, state.user.register, { confirmPassword: e.target.value }) } };
+	      });
+	    }
+	  }, {
+	    key: 'toggleRememberMe',
+	    value: function toggleRememberMe() {
+	      (0, _state.update)(function (state) {
+	        return { user: { register: _extends({}, state.user.register, { rememberMe: !state.user.rememeberMe }) } };
+	      });
+	    }
+	  }, {
+	    key: 'renderButton',
+	    value: function renderButton() {
+	      var loading = this.props.api.loading;
+	
+	
+	      return !!loading[_api.api.routes.register()] ? _react2.default.createElement(
+	        'button',
+	        { disabled: true, type: 'button', className: 'btn btn-primary btn-lg btn-block' },
+	        'Registering...'
+	      ) : _react2.default.createElement(
+	        'button',
+	        { onClick: this.register.bind(this), type: 'button', className: 'btn btn-primary btn-lg btn-block' },
+	        'Register'
+	      );
+	    }
+	  }, {
+	    key: 'doPasswordsMatch',
+	    value: function doPasswordsMatch() {
+	      var _props$user$register2 = this.props.user.register;
+	      var password = _props$user$register2.password;
+	      var confirmPassword = _props$user$register2.confirmPassword;
+	
+	      return password === confirmPassword;
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var passwordErrorClass = this.doPasswordsMatch() ? '' : 'has-error';
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'container-fluid login-container' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'col-xs-offset-4 col-xs-4' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'email' },
+	              'Email address'
+	            ),
+	            _react2.default.createElement('input', { onChange: this.handleChangeUsername.bind(this), type: 'email', className: 'form-control', id: 'email', placeholder: 'Email' })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group ' + passwordErrorClass },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'password' },
+	              'Password'
+	            ),
+	            _react2.default.createElement('input', { onChange: this.handleChangePassword.bind(this), type: 'password', className: 'form-control', id: 'password', placeholder: 'Password' })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group ' + passwordErrorClass },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'confirmPassword' },
+	              'Confirm Password'
+	            ),
+	            _react2.default.createElement('input', { onChange: this.handleChangeConfirmPassword.bind(this), type: 'password', className: 'form-control', id: 'confirmPassword', placeholder: 'Confirm Password' })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              _reactRouter.Link,
+	              { to: '/' },
+	              'Login'
+	            )
+	          ),
+	          this.renderButton()
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Login;
+	}(_react.Component);
+	
+	Login.contextTypes = {
+	  router: _react.PropTypes.object.isRequired
+	};
+	exports.default = Login;
+
+/***/ },
+/* 410 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _bountyTable = __webpack_require__(411);
+	
+	var bountyTable = _interopRequireWildcard(_bountyTable);
+	
+	var _login = __webpack_require__(415);
+	
+	var login = _interopRequireWildcard(_login);
+	
+	var _toast = __webpack_require__(417);
+	
+	var toast = _interopRequireWildcard(_toast);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/***/ },
+/* 411 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(412);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(414)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./bounty-table.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./bounty-table.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 412 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(413)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".bounty-heading {\n  font-weight: bold;\n}\n\n.bounty-data-row {\n  padding-top: 10px;\n  padding-bottom: 10px;\n  padding-left: 15px;\n}\n\n.bounty-data-row:hover {\n  background: #EEEEEE;\n  cursor: pointer;\n}\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 413 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+	
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+	
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 414 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	var stylesInDom = {},
+		memoize = function(fn) {
+			var memo;
+			return function () {
+				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+				return memo;
+			};
+		},
+		isOldIE = memoize(function() {
+			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+		}),
+		getHeadElement = memoize(function () {
+			return document.head || document.getElementsByTagName("head")[0];
+		}),
+		singletonElement = null,
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
+	
+	module.exports = function(list, options) {
+		if(false) {
+			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+		}
+	
+		options = options || {};
+		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+		// tags it will allow on a page
+		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+	
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+	
+		var styles = listToStyles(list);
+		addStylesToDom(styles, options);
+	
+		return function update(newList) {
+			var mayRemove = [];
+			for(var i = 0; i < styles.length; i++) {
+				var item = styles[i];
+				var domStyle = stylesInDom[item.id];
+				domStyle.refs--;
+				mayRemove.push(domStyle);
+			}
+			if(newList) {
+				var newStyles = listToStyles(newList);
+				addStylesToDom(newStyles, options);
+			}
+			for(var i = 0; i < mayRemove.length; i++) {
+				var domStyle = mayRemove[i];
+				if(domStyle.refs === 0) {
+					for(var j = 0; j < domStyle.parts.length; j++)
+						domStyle.parts[j]();
+					delete stylesInDom[domStyle.id];
+				}
+			}
+		};
+	}
+	
+	function addStylesToDom(styles, options) {
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			if(domStyle) {
+				domStyle.refs++;
+				for(var j = 0; j < domStyle.parts.length; j++) {
+					domStyle.parts[j](item.parts[j]);
+				}
+				for(; j < item.parts.length; j++) {
+					domStyle.parts.push(addStyle(item.parts[j], options));
+				}
+			} else {
+				var parts = [];
+				for(var j = 0; j < item.parts.length; j++) {
+					parts.push(addStyle(item.parts[j], options));
+				}
+				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+			}
+		}
+	}
+	
+	function listToStyles(list) {
+		var styles = [];
+		var newStyles = {};
+		for(var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var id = item[0];
+			var css = item[1];
+			var media = item[2];
+			var sourceMap = item[3];
+			var part = {css: css, media: media, sourceMap: sourceMap};
+			if(!newStyles[id])
+				styles.push(newStyles[id] = {id: id, parts: [part]});
+			else
+				newStyles[id].parts.push(part);
+		}
+		return styles;
+	}
+	
+	function insertStyleElement(options, styleElement) {
+		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+	
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+	
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
+		styleElement.type = "text/css";
+		insertStyleElement(options, styleElement);
+		return styleElement;
+	}
+	
+	function createLinkElement(options) {
+		var linkElement = document.createElement("link");
+		linkElement.rel = "stylesheet";
+		insertStyleElement(options, linkElement);
+		return linkElement;
+	}
+	
+	function addStyle(obj, options) {
+		var styleElement, update, remove;
+	
+		if (options.singleton) {
+			var styleIndex = singletonCounter++;
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
+			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+		} else if(obj.sourceMap &&
+			typeof URL === "function" &&
+			typeof URL.createObjectURL === "function" &&
+			typeof URL.revokeObjectURL === "function" &&
+			typeof Blob === "function" &&
+			typeof btoa === "function") {
+			styleElement = createLinkElement(options);
+			update = updateLink.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+				if(styleElement.href)
+					URL.revokeObjectURL(styleElement.href);
+			};
+		} else {
+			styleElement = createStyleElement(options);
+			update = applyToTag.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+			};
+		}
+	
+		update(obj);
+	
+		return function updateStyle(newObj) {
+			if(newObj) {
+				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+					return;
+				update(obj = newObj);
+			} else {
+				remove();
+			}
+		};
+	}
+	
+	var replaceText = (function () {
+		var textStore = [];
+	
+		return function (index, replacement) {
+			textStore[index] = replacement;
+			return textStore.filter(Boolean).join('\n');
+		};
+	})();
+	
+	function applyToSingletonTag(styleElement, index, remove, obj) {
+		var css = remove ? "" : obj.css;
+	
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = replaceText(index, css);
+		} else {
+			var cssNode = document.createTextNode(css);
+			var childNodes = styleElement.childNodes;
+			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+			if (childNodes.length) {
+				styleElement.insertBefore(cssNode, childNodes[index]);
+			} else {
+				styleElement.appendChild(cssNode);
+			}
+		}
+	}
+	
+	function applyToTag(styleElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+		var sourceMap = obj.sourceMap;
+	
+		if(media) {
+			styleElement.setAttribute("media", media)
+		}
+	
+		if(styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+			while(styleElement.firstChild) {
+				styleElement.removeChild(styleElement.firstChild);
+			}
+			styleElement.appendChild(document.createTextNode(css));
+		}
+	}
+	
+	function updateLink(linkElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+		var sourceMap = obj.sourceMap;
+	
+		if(sourceMap) {
+			// http://stackoverflow.com/a/26603875
+			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+		}
+	
+		var blob = new Blob([css], { type: "text/css" });
+	
+		var oldSrc = linkElement.href;
+	
+		linkElement.href = URL.createObjectURL(blob);
+	
+		if(oldSrc)
+			URL.revokeObjectURL(oldSrc);
+	}
+
+
+/***/ },
+/* 415 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(416);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(414)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./login.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./login.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 416 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(413)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".login-container {\n  padding-top: 15%;\n}\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 417 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(418);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(414)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./toast.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./toast.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 418 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(413)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".toast-bar {\n  position: relative;\n}\n\n.toast {\n  right: 0;\n  position: absolute;\n  background-color: red;\n  padding: 10px;\n  margin-top: 10px;\n  margin-right: 15px;\n  z-index: 1;\n  border-radius: 3px;\n  box-shadow: 0 0 12px #999;\n  color: #333;\n  opacity: 0.7;\n  border: 1px solid;\n  background-color: white;\n  white-space: pre-wrap;\n  white-space: -moz-pre-wrap;\n  white-space: -o-pre-wrap;\n  word-wrap: break-word;\n}\n\n.toast-failure {\n  border-color: #bd362f;\n}\n\n.toast-success {\n  border-color: #51a351;\n}\n\n.toast:hover {\n  opacity: 1;\n  cursor: pointer;\n}\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 419 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var keys = exports.keys = {
+	  application: 'elite-bounty-state'
+	};
+	
+	exports.default = function (key) {
+	  var api = {
+	    __value: localStorage.getItem(key) || null,
+	    get value() {
+	      return JSON.parse(api.__value);
+	    },
+	    set value(value) {
+	      api.__value = JSON.stringify(value);
+	      localStorage.setItem(key, api.__value);
+	    }
+	  };
+	  return api;
+	};
+
+/***/ },
+/* 420 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var toString = __webpack_require__(296);
+	
+	/** Used to generate unique IDs. */
+	var idCounter = 0;
+	
+	/**
+	 * Generates a unique ID. If `prefix` is given the ID is appended to it.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @category Util
+	 * @param {string} [prefix=''] The value to prefix the ID with.
+	 * @returns {string} Returns the unique ID.
+	 * @example
+	 *
+	 * _.uniqueId('contact_');
+	 * // => 'contact_104'
+	 *
+	 * _.uniqueId();
+	 * // => '105'
+	 */
+	function uniqueId(prefix) {
+	  var id = ++idCounter;
+	  return toString(prefix) + id;
+	}
+	
+	module.exports = uniqueId;
+
 
 /***/ }
 /******/ ]);
